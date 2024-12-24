@@ -15,3 +15,6 @@ export default function Input({ icon: Icon, ...props }) {
     </div>
   )
 }
+Input.propTypes = {
+  icon: PropTypes.elementType //this is the prop type for the icon and elementType is the type of the icon
+}

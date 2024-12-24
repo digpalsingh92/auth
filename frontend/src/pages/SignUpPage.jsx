@@ -5,7 +5,7 @@ import { User, Mail, Lock, Loader } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
 
-export default function signUpPage() {
+export default function SignUpPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

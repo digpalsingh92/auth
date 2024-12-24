@@ -1,5 +1,5 @@
 import React from 'react'
-import { motion } from 'framer-motion'
+import { color, motion } from 'framer-motion'
 
 export default function FloatingShape( { color, size, top, left, delay } ) {
   return (
@@ -19,4 +19,11 @@ export default function FloatingShape( { color, size, top, left, delay } ) {
     />
 
   )
+}
+FloatingShape.propTypes = {
+  color: PropTypes.string, //this is the prop type for the color and string is the type of the color
+  size: PropTypes.string, //this is the prop type for the size and string is the type of the size
+  top: PropTypes.string, //this is the prop type for the top and string is the type of the top
+  left: PropTypes.string, //this is the prop type for the left and string is the type of the left
+  delay: PropTypes.number //this is the prop type for the delay and number is the type of the delay
 }
