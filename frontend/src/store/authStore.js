@@ -90,7 +90,7 @@ export const useAuthStore = create((set) => ({
     }
   },
   checkAuth: async () => {
-    await new Promise((resolve) => setTimeout(resolve, 5000)); // wait for 1 second
+    // await new Promise((resolve) => setTimeout(resolve, 5000)); // wait for 1 second
     set({ isCheckingAuth: true, error: null }); // set the isCheckingAuth state to true
     try {
       const response = await axios.get(`${API_URL}/check-auth`); // make a get request to the check-auth endpoint to check if the user is authenticated
