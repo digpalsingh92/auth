@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import PropTypes from "prop-types";
 import FloatingShape from "./components/FloatingShape";
 import { Toaster } from "react-hot-toast";
 import { Routes, Route, Navigate } from "react-router-dom";
@@ -116,3 +117,9 @@ export default function App() {
     </div>
   );
 }
+RedirectAuthenticatedUser.propTypes = {
+  children: PropTypes.node.isRequired, //this is the prop type for the children and node is the type of the children
+}
+ProtectedRoute.propTypes = {
+  children: PropTypes.node.isRequired, //this is the prop type for the children and node is the type of the children
+};

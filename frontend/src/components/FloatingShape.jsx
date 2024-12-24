@@ -1,5 +1,6 @@
 import React from 'react'
-import { color, motion } from 'framer-motion'
+import PropTypes from "prop-types";
+import { motion } from 'framer-motion'
 
 export default function FloatingShape( { color, size, top, left, delay } ) {
   return (

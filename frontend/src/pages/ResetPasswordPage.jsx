@@ -8,7 +8,7 @@ import toast from 'react-hot-toast';
 import { useAuthStore } from "../store/authStore";
 
 export default function ResetPasswordPage() {
-  const [passsword, setPassword] = useState("");
+  const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
   const { isLoading, error, message, resetPassword } = useAuthStore();
@@ -19,13 +19,13 @@ export default function ResetPasswordPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if(passsword !== confirmPassword){
+    if(password !== confirmPassword){
      alert("Passwords do not match");
      return;
     }
     
    try {
-    await resetPassword(token, passsword);
+    await resetPassword(token, password);
 
     toast.success("Password reset successfully, redirecting to login page"); // can add timing to redirect like 3 2 1 go
     setTimeout(() => {
@@ -62,7 +62,7 @@ export default function ResetPasswordPage() {
             icon={Lock}
             type="password"
             placeholder="Enter new Password"
-            value={passsword}
+            value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
           />

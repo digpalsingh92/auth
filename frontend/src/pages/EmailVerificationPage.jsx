@@ -48,7 +48,7 @@ export default function EmailVerificationPage() {
 			}
 		}
 	};
-    const handleKeyDown = (e, index) => {
+    const handleKeyDown = (index, e) => {
         if (e.key === "Backspace" && !code[index] && index > 0) // if backspace is pressed and the current input is empty and the index is greater than 0 than focus on the previous input
             {
             inputRefs.current[index - 1].focus(); // focus on the previous input

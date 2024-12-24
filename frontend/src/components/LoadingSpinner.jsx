@@ -4,8 +4,8 @@ import { motion } from 'framer-motion';
 const LoadingSpinner = () => {
   const circles = Array.from({ length: 12 }).map((_, index) => (
     <motion.div
-      key={index}
       className="absolute w-4 h-4 bg-blue-500 rounded-full"
+      key={index}
       style={{
         rotate: index * 30,
         translateX: '0',
