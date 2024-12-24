@@ -96,7 +96,7 @@ export const login = async (req, res) => {
 
     const isMatchPassword = await bcrypt.compare(password, user.password);
     if(!isMatchPassword){
-      res.status(400).json({success: false, message: "Invalid Credentials"});
+    return res.status(400).json({success: false, message: "Password is Incorrect Try again"});
     } // check if password is correct or not
 
     generateTokenandSetcookie(res, user._id); // generate jwt token and set cookie
