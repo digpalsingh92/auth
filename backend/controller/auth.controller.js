@@ -1,9 +1,16 @@
 import { User } from "../models/user.model.js";
-import bcrypt from "bcryptjs"
-import { v4 as uuidv4 } from 'uuid';
+import { validateEmail, validateCode } from "../utils/validator.js";
 import { generateVerificationCode } from "../utils/generateVerificationCode.js";
 import { generateTokenandSetcookie } from "../utils/generateTokenSetCookie.js";
-import { sendPasswordResetEmail, sendPasswordResetSuccessEmail, sendVerificationEmail, sendWelcomeEmail } from "../mailtrap/email.js";
+import {
+  sendPasswordResetEmail,
+  sendPasswordResetSuccessEmail,
+  sendVerificationEmail,
+  sendWelcomeEmail,
+} from "../mailtrap/email.js";
+
+import bcrypt from "bcryptjs";
+import { v4 as uuidv4 } from "uuid";
 
 export const signup = async (req, res) => {
   const { email, password, name } = req.body;
@@ -18,8 +25,10 @@ export const signup = async (req, res) => {
         .status(400)
         .json({ message: "Password must be at least 6 characters long" });
     } // check if password is less than 6 characters long
+    validateEmail(email); // validate email using validator function
+    const santizedEmail = validator.normalizeEmail(email); 
 
-    const userAlreadyExists = await User.findOne({ email }); // check if user already exists
+    const userAlreadyExists = await User.findOne({ email: santizedEmail }); // check if user already exists
 
     if (userAlreadyExists) {
       return res.status(400).json({ message: "User already exists" });
@@ -61,12 +70,19 @@ export const verifyEmail = async (req, res) => {
   const { code } = req.body;
 
   try {
+    validateCode(code); // validate code using validator function
+    const santizedCode = validator.escape(code); //escape code to prevent XSS attack
     const user = await User.findOne({
-      verificationToken: code,
+      verificationToken: santizedCode,
       verificationTokenExpiresAt: { $gt: Date.now() }, // check if verification token is not expired
     });
-    if(!user){
-        return res.status(400).json({success: false, message: "Invalid or expired verification code"});
+    if (!user) {
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message: "Invalid or expired verification code",
+        });
     }
     user.isVerified = true;
     user.verificationToken = undefined;
@@ -74,11 +90,13 @@ export const verifyEmail = async (req, res) => {
     await user.save();
     await sendWelcomeEmail(user.email, user.name);
 
-    res.status(200).json({success: true, message: "Email verified successfully",
-        user:{
-            ...user._doc,
-            password: undefined,
-        },
+    res.status(200).json({
+      success: true,
+      message: "Email verified successfully",
+      user: {
+        ...user._doc,
+        password: undefined,
+      },
     });
   } catch (error) {
     console.log("Error verifying email", error);
@@ -89,14 +107,19 @@ export const verifyEmail = async (req, res) => {
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const user = await User.findOne({ email });
+
+    validateEmail(email); // validate email using validator function
+    const santizedEmail = validator.normalizeEmail(email); 
+    const user = await User.findOne({ email:santizedEmail });
     if (!user) {
       throw new Error("Invalid credentials");
     } // check if user exists in database or not
 
     const isMatchPassword = await bcrypt.compare(password, user.password);
-    if(!isMatchPassword){
-    return res.status(400).json({success: false, message: "Password is Incorrect Try again"});
+    if (!isMatchPassword) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Password is Incorrect Try again" });
     } // check if password is correct or not
 
     generateTokenandSetcookie(res, user._id); // generate jwt token and set cookie
@@ -111,7 +134,7 @@ export const login = async (req, res) => {
         ...user._doc,
         password: undefined,
       },
-      });
+    });
   } catch (error) {
     console.log("Error logging in", error);
     res.status(500).json({ success: false, message: error.message });
@@ -119,16 +142,24 @@ export const login = async (req, res) => {
 };
 export const logout = async (req, res) => {
   res.clearCookie("token");
-  res.status(200).json({ success:true, message: "Logged out successfully" });
+  res.status(200).json({ success: true, message: "Logged out successfully" });
 };
 
 export const forgotPassword = async (req, res) => {
   const { email } = req.body;
   try {
-    const user = await User.findOne({ email });
-    if(!user){
-      return res.status(404).json({success: false, message: "User not found or You have entered a wrong email"});
-    }else{
+    validateEmail(email); // validate email using validator function
+
+    const santizedEmail = validator.normalizeEmail(email); // sanitize email using validator function. It removes all dots from email
+    const user = await User.findOne({ email: santizedEmail }); // find user by email
+    if (!user) {
+      return res
+        .status(404)
+        .json({
+          success: false,
+          message: "User not found or You have entered a wrong email",
+        });
+    } else {
       console.log(user);
     }
     // Generate password reset token
@@ -141,17 +172,24 @@ export const forgotPassword = async (req, res) => {
     await user.save();
 
     // send email with reset password link
-    await sendPasswordResetEmail(user.email, `${process.env.CLIENT_URL}/reset-password/${resetToken}`);
+    await sendPasswordResetEmail(
+      user.email,
+      `${process.env.CLIENT_URL}/reset-password/${resetToken}`
+    );
 
-    res.status(200).json({success: true, message: "Password reset link sent to your email"});
+    res
+      .status(200)
+      .json({
+        success: true,
+        message: "Password reset link sent to your email",
+      });
   } catch (error) {
     console.log("Error sending password reset email", error);
-    res.status(500).json({success: false, message: "Server Error"});
+    res.status(500).json({ success: false, message: "Server Error" });
   }
-}
+};
 
 export const resetPassword = async (req, res) => {
-  
   try {
     const { token } = req.params;
     const { password } = req.body;
@@ -161,12 +199,19 @@ export const resetPassword = async (req, res) => {
       resetPasswordTokenExpires: { $gt: Date.now() },
     });
 
-    if(!user){
-      return res.status(400).json({success: false, message: "Invalid or expired reset token"});
+    if (!user) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid or expired reset token" });
     } // check if reset token is valid or not
 
-    if(typeof password !== "string" ){
-      return res.status(400).json({success: false, message: "Password must be a mix of Numbers and Characters only"}); //|| password.length < 6
+    if (typeof password !== "string") {
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message: "Password must be a mix of Numbers and Characters only",
+        }); //|| password.length < 6
     }
     const hashedPassword = await bcrypt.hash(password, 10); // hash new password
     user.password = hashedPassword;
@@ -175,26 +220,28 @@ export const resetPassword = async (req, res) => {
 
     await user.save();
 
-   await sendPasswordResetSuccessEmail(user.email); // send email to user that password has been reset
-  
-    return  res.status(200).json({success: true, message: "Password reset successfully"});
-    
+    await sendPasswordResetSuccessEmail(user.email); // send email to user that password has been reset
+
+    return res
+      .status(200)
+      .json({ success: true, message: "Password reset successfully" });
   } catch (error) {
     console.log("Error resetting password", error);
-   return res.status(500).json({success: false, message: "Server Error"});
+    return res.status(500).json({ success: false, message: "Server Error" });
   }
-
-}
+};
 export const checkAuth = async (req, res) => {
   try {
     const user = await User.findById(req.userId).select("-password"); // get user by id and exclude password field
 
-    if(!user) {
-      return res.status(401).json({success: false, message: "User not found"});
+    if (!user) {
+      return res
+        .status(401)
+        .json({ success: false, message: "User not found" });
     }
-    res.status(200).json({success: true, user}); // send user data if user is found in database
+    res.status(200).json({ success: true, user }); // send user data if user is found in database
   } catch (error) {
     console.log("Error checking auth", error);
-    res.status(500).json({success: false, message: "Server Error"});
+    res.status(500).json({ success: false, message: "Server Error" });
   }
-}
+};
