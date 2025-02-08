@@ -1,13 +1,17 @@
 import express from 'express';
-import {DBconnect} from './db/DBconnect.js';
 import { configDotenv } from 'dotenv';
 import cookieParser from 'cookie-parser';
-import authRoutes from './routes/auth.route.js';
 import cors from 'cors';
+import morgan from 'morgan';
+
+import {DBconnect} from './db/DBconnect.js';
+import authRoutes from './routes/auth.route.js';
 
 configDotenv();
 const app = express();
 const PORT = process.env.PORT;
+
+app.use(morgan('dev')); // log http requests
 
 app.use(cors({
     origin: 'http://localhost:5173',
